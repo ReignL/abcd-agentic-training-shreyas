@@ -1,0 +1,235 @@
+{
+  "name": "Email ChatBot",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "010df573-3d98-4793-9dee-6a32341034b8",
+      "name": "Telegram Trigger",
+      "webhookId": "35ccc60d-afd5-41dd-9852-416c0da922f2",
+      "credentials": {
+        "telegramApi": {
+          "id": "8IeMtSeYrLxlh5rg",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=User Message: {{ $json.message.text }}\n\n\nYour is to create email drafts, and when you've created a draft, \n\n# SUPER IMPORTANT:  write the draft out in telegram for the user to see. \n\nALSO: End every email with \n\nBest,\n\nShreyas\n3rd Year CSE - A ",
+        "options": {
+          "systemMessage": "Your is to create email drafts, and when you've created a draft, \n\n# SUPER IMPORTANT:  write the draft out in telegram for the user to see. \n\nALSO: End every email with \n\nBest,\n\nBen\nBoldslate.com"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        224,
+        0
+      ],
+      "id": "d8911d4b-e885-45c1-b191-ed1ef1b21091",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        592,
+        0
+      ],
+      "id": "a667f9a2-e3ac-4f33-ace5-80bb30c17370",
+      "name": "Telegram",
+      "webhookId": "1963ebd7-0451-4b22-8f74-888465d83adf",
+      "credentials": {
+        "telegramApi": {
+          "id": "8IeMtSeYrLxlh5rg",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To_Email', ``, 'string') }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        400,
+        224
+      ],
+      "id": "6b4fa6f1-4deb-42f9-ab64-8da5152e20d3",
+      "name": "Gmail",
+      "webhookId": "9780a766-fcfc-42ae-8853-9b851076b958",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "hobuPLICIm8mGuLl",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Trigger').item.json.message.from.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        272,
+        224
+      ],
+      "id": "605f7e76-18f6-4492-8ea8-8cb1235aecb4",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Use this to SEND Gmails.",
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "emailType": "text",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        544,
+        240
+      ],
+      "id": "f3b0ef6a-5fb0-4072-a8ea-6096e7e16c25",
+      "name": "Gmail1",
+      "webhookId": "9780a766-fcfc-42ae-8853-9b851076b958",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "hobuPLICIm8mGuLl",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        96,
+        208
+      ],
+      "id": "c4959325-47ee-43ea-a406-b97568f1467d",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "76McTXya1lXmegvT",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f936ec68-04f7-48ec-a901-f5ef8dfa7e34",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "615ec97ff8b01ed956b493b97beda3600477b4078bc4974fa20386fcccf17599"
+  },
+  "id": "MeqTgppVxA011Nfi",
+  "tags": []
+}
